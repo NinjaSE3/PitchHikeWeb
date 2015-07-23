@@ -9,8 +9,15 @@ mongoose.model('user', new mongoose.Schema({
   name:		String,
   image:	String,
   language:     String,
-  rank:		Number,
-  location:	[Number]
+  rate:         Number,
+  location:	[Number],
+  fullname:     String,
+  birthday:     String,
+  gender:       String,
+  hobbies:      String,
+  job:          String,
+  dream:        String,
+  from:         String
 }));
 User = mongoose.model('user');
 
@@ -21,6 +28,11 @@ mongoose.model('pitch', new mongoose.Schema({
   arrive:       Number
 }));
 Pitch = mongoose.model('pitch');
+
+mongoose.model('topic', new mongoose.Schema({
+  topic:        String
+}));
+Topic = mongoose.model('topic');
 
 
 // ログイン
@@ -116,6 +128,9 @@ app.get('/startPitching', function(req, res, next){
 
 // トピック取得
 app.get('/getTopics', function(req, res, next){
+  Topic.find({}, function(err, doc){
+    res.send(doc);
+  });
 });
 
 // ユーザ登録
@@ -124,6 +139,21 @@ app.get('/registUser', function(req, res, next){
 
 // ユーザ更新
 app.get('/updateUser', function(req, res, next){
+});
+
+// ユーザの評価更新
+app.get('/updateUserRate', function(req, res, next){
+  // userレコードのRateを更新
+  User.findOne({ userid:req.param("userid") }, function(err, doc){
+    if(!('rate' in doc) || !doc.rate){
+      // 初評価の場合は3を基準にして計算
+      doc.rate = 3;
+    }
+    doc.rate = (doc.rate + parseInt(req.param("rate"))) / 2;
+    doc.save(function(err){
+    });
+    res.send(doc);
+  });
 });
 
 // ユーザ削除
