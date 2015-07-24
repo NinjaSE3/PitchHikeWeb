@@ -25,7 +25,10 @@ mongoose.model('pitch', new mongoose.Schema({
   status:       String,
   student:      String,
   teacher:      String,
-  arrive:       Number
+  location:     [Number],
+  place:        String,
+  arrive:       Number,
+  starttime:    Number
 }));
 Pitch = mongoose.model('pitch');
 
@@ -50,21 +53,27 @@ app.get('/getUsers', function(req, res, next){
   });
 });
 
+// ユーザの位置情報を更新
+app.get('/updateUserLocation', function(req, res, next){
+  User.findOne({ userid:req.param("userid") }, function(err, doc){
+    doc.location = [req.param("lng"),req.param("lat")];
+    doc.save(function(err){
+    });
+    res.send(doc);
+  });
+});
+
 // 最も近い教師をリクエスト
 app.get('/requestTeacher', function(req, res, next){
   User.findOne({ location : { $near : [req.param("lng"), req.param("lat")] }, language:req.param("lang") }, function(err, doc){
     var teacher = doc.toObject();
-    // studentの位置情報を更新
-    User.findOne({ userid:req.param("userid") }, function(err, doc){
-      doc.location = [req.param("lng"),req.param("lat")];
-      doc.save(function(err){
-      });
-    });
     // pitchレコード（ステータス：リクエスト中）を作成
     var pitchRecord = new Pitch();
-    pitchRecord.status = "req";
-    pitchRecord.student = req.param("userid");
-    pitchRecord.teacher = teacher.userid;
+    pitchRecord.status   = "req";
+    pitchRecord.student  = req.param("userid");
+    pitchRecord.teacher  = teacher.userid;
+    pitchRecord.location = [req.param("lng"), req.param("lat")];
+    pitchRecord.place    = req.param("place");
     pitchRecord.save(function(err){
       res.send(pitchRecord);
     });
@@ -124,6 +133,36 @@ app.get('/cancelPitching', function(req, res, next){
 
 // ピッチング開始
 app.get('/startPitching', function(req, res, next){
+  // pitchレコードのステータスを更新
+  Pitch.findOne({ _id:req.param("_id") }, function(err, doc){
+    switch (doc.status) {
+      case "res":
+        doc.status = "waiting";
+        doc.save(function(err){
+        });
+        res.send(doc);
+        break;
+      case "waiting":
+        doc.status = "start";
+        doc.save(function(err){
+        });
+        res.send(doc);
+        break;
+      default:
+        res.send(doc);
+    }
+  });
+});
+
+// ピッチングスタート時間を更新
+app.get('/updatePitchStarttime', function(req, res, next){
+  // pitchレコードの開始時間を設定
+  Pitch.findOne({ _id:req.param("_id") }, function(err, doc){
+    doc.starttime = req.param("starttime");
+    doc.save(function(err){
+    });
+    res.send(doc);
+  });
 });
 
 // トピック取得
