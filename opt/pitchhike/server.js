@@ -27,6 +27,7 @@ mongoose.model('pitch', new mongoose.Schema({
   teacher:      String,
   location:     [Number],
   place:        String,
+  placeid:      String,
   arrive:       Number,
   starttime:    Number
 }));
@@ -74,6 +75,7 @@ app.get('/requestTeacher', function(req, res, next){
     pitchRecord.teacher  = teacher.userid;
     pitchRecord.location = [req.param("lng"), req.param("lat")];
     pitchRecord.place    = req.param("place");
+    pitchRecord.placeid  = req.param("placeid");
     pitchRecord.save(function(err){
       res.send(pitchRecord);
     });
@@ -156,9 +158,20 @@ app.get('/startPitching', function(req, res, next){
 
 // ピッチングスタート時間を更新
 app.get('/updatePitchStarttime', function(req, res, next){
-  // pitchレコードの開始時間を設定
+  // pitchレコードのスタート時間を設定
   Pitch.findOne({ _id:req.param("_id") }, function(err, doc){
     doc.starttime = req.param("starttime");
+    doc.save(function(err){
+    });
+    res.send(doc);
+  });
+});
+
+// ピッチング終了
+app.get('/finishPitching', function(req, res, next){
+  // pitchレコードのステータスを「終了（finish）」に更新
+  Pitch.findOne({ _id:req.param("_id") }, function(err, doc){
+    doc.status = "finish";
     doc.save(function(err){
     });
     res.send(doc);
