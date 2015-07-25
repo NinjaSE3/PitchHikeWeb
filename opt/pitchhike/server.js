@@ -1,6 +1,10 @@
 var express = require('express');
 var app = express();
 var mongoose = require('mongoose');
+var fs = require('fs');
+
+var SERVERPATH = '/opt/pitchhike';
+
 mongoose.connect('mongodb://10.100.0.5/pitchhike');
 
 mongoose.model('user', new mongoose.Schema({
@@ -210,6 +214,13 @@ app.get('/updateUserRate', function(req, res, next){
 
 // ユーザ削除
 app.get('/deleteUser', function(req, res, next){
+});
+
+// 画像を取得
+app.get('/getImage', function(req, res, next){
+  var image = fs.readFileSync(SERVERPATH + '/images/' + req.param("url"));
+  // res.send(image, { 'Content-Type': 'image/jpeg' }, 200);
+  res.send(image);
 });
 
 app.listen(8080);
