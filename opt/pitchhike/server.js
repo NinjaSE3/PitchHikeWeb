@@ -3,9 +3,10 @@ var app = express();
 var mongoose = require('mongoose');
 var fs = require('fs');
 
-var SERVERPATH = '/opt/pitchhike';
+//var SERVERPATH = '/opt/pitchhike';
+var SERVERPATH = '/Users/t-kurasawa/Documents/PitchHikeWeb/opt/pitchhike';
 
-mongoose.connect('mongodb://10.100.0.5/pitchhike');
+mongoose.connect('mongodb://localhost:27017/pitchhike');
 
 mongoose.model('user', new mongoose.Schema({
   userid:       String,
@@ -224,4 +225,3 @@ app.get('/getImage', function(req, res, next){
 });
 
 app.listen(8080);
-
